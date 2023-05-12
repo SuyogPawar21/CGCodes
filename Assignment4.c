@@ -68,11 +68,12 @@ void drawPolygon() {
 
 
 void Init() {
-		glutInitDisplayMode(GLUT_SINGLE|GLUT_RGB);
-    glClearColor(1.0, 1.0, 1.0, 0.0);
-    glMatrixMode(GL_PROJECTION);
-    gluOrtho2D(0, windowWidth, 0, windowHeight);
+	glutInitDisplayMode(GLUT_SINGLE|GLUT_RGB);
+  	glClearColor(1.0, 1.0, 1.0, 0.0);
+  	glMatrixMode(GL_PROJECTION);
+  	gluOrtho2D(0, windowWidth, 0, windowHeight);
 }
+
 
 // Utility function to draw a colored point.
 void drawColoredPoint(float x, float y, Color color) {
@@ -81,6 +82,7 @@ void drawColoredPoint(float x, float y, Color color) {
 	glVertex2f(x, y);
 	glEnd();
 }
+
 
 // Boundary Fill Algorithm (4 Point Version)
 void boundaryFill4(int x, int y) {
@@ -102,6 +104,7 @@ void boundaryFill4(int x, int y) {
 	glFlush();
 	
 }
+
 
 // Flood Fill Algorithm (4 Point Version)
 void floodFill4(int x, int y) {
@@ -127,26 +130,27 @@ void floodFill4(int x, int y) {
 void initializeColors() {
 	// Black
 	boundaryColor.r = 0.0f;
-  boundaryColor.g = 0.0f;
-  boundaryColor.b = 0.0f;
+  	boundaryColor.g = 0.0f;
+  	boundaryColor.b = 0.0f;
   
-  // Red
-  fillColor.r = 1.0f;
-  fillColor.g = 0.0f;
-  fillColor.b = 0.0f;
+ 	// Red
+  	fillColor.r = 1.0f;
+  	fillColor.g = 0.0f;
+  	fillColor.b = 0.0f;
   
-  // White
-  interiorColor.r = 1.0f;
-  interiorColor.g = 1.0f;
-  interiorColor.b = 1.0f;
+  	// White
+  	interiorColor.r = 1.0f;
+  	interiorColor.g = 1.0f;
+  	interiorColor.b = 1.0f;
 }
 
 
 void myDisplay() {
-		glClear(GL_COLOR_BUFFER_BIT);
-		glColor3f(0.0, 0.0, 0.0);
-    glFlush();
+	glClear(GL_COLOR_BUFFER_BIT);
+	glColor3f(0.0, 0.0, 0.0);
+   	glFlush();
 }
+
 
 // Mouse procedure to draw a polygon by specifying points using left click.
 void myMouse(int button, int action, int xMouse, int yMouse) {
@@ -188,19 +192,19 @@ void myKeyboard(unsigned char key, int xMouse, int yMouse) {
 
 int main(int argc, char** argv) {
 		
-		initializeColors();
+	initializeColors();
 		
-		windowWidth = atoi(argv[1]);
-		windowHeight = atoi(argv[2]);
+	windowWidth = atoi(argv[1]);
+	windowHeight = atoi(argv[2]);
 		
-    glutInit(&argc, argv);
-    glutInitWindowSize(windowWidth, windowHeight);
-    glutInitWindowPosition(100, 100);
-    glutCreateWindow("Assignment4");
+  	glutInit(&argc, argv);
+  	glutInitWindowSize(windowWidth, windowHeight);
+  	glutInitWindowPosition(100, 100);
+  	glutCreateWindow("Assignment4");
     
-    Init();
-    glutDisplayFunc(myDisplay);
-    glutMouseFunc(myMouse);
-    glutKeyboardFunc(myKeyboard);
-    glutMainLoop();    
+  	Init();
+  	glutDisplayFunc(myDisplay);
+  	glutMouseFunc(myMouse);
+  	glutKeyboardFunc(myKeyboard);
+  	glutMainLoop();    
 }
