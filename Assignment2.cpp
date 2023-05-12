@@ -2,27 +2,29 @@
 #include <cmath>
 #include <stdlib.h>
 
+
 // Global Variables used in Mouse Procedure.
 bool mousePressedBefore = false;
 int x, y;
+
 
 // Global Variables for storing window dimensions.
 int windowWidth, windowHeight;
 
 
 // Utility function to draw a point.
-void displayPoint(float x, float y) {
+void displayPoint(double x, double y) {
 	glBegin(GL_POINTS);
-	glColor3f(1.0, 1.0, 0.0);
 	glVertex2f(x, y);
 	glEnd();
 }
 
 
 // Works for all octants.
-void DDALineDrawingAlgo(float x1, float y1, float x2, float y2) {
-	float dx = x2 - x1, dy = y2 - y1;
-	float steps;
+void DDALineDrawingAlgo(double x1, double y1, double x2, double y2) {
+
+	double dx = x2 - x1, dy = y2 - y1;
+	double steps;
 	
 	if (abs(dx) > abs(dy)) {
 		steps = abs(dx);
@@ -31,8 +33,8 @@ void DDALineDrawingAlgo(float x1, float y1, float x2, float y2) {
 		steps = abs(dy);
 	}
 
-	float deltaX = dx/steps, deltaY = dy/steps;
-	float x = x1, y = y1;
+	double deltaX = dx/steps, deltaY = dy/steps;
+	double x = x1, y = y1;
 	displayPoint(x, y);
 	
 	for (int i = 0; i < steps; i++) {
@@ -40,18 +42,23 @@ void DDALineDrawingAlgo(float x1, float y1, float x2, float y2) {
 		y += deltaY;
 		displayPoint(x, y);
 	}
+	
 	displayPoint(x2, y2);
+	
 }
 
 
 // Works only for first octant.
-void BresenhamLineDrawingAlgo(float x1, float y1, float x2, float y2) {
-	float deltaX = x2 - x1, deltaY = y2 - y1;
-	float pk = (2 * deltaY) - deltaX;
-	float x = x1, y = y1;
+void BresenhamLineDrawingAlgo(double x1, double y1, double x2, double y2) {
+
+	double deltaX = x2 - x1, deltaY = y2 - y1;
+	double pk = (2 * deltaY) - deltaX;
+	double x = x1, y = y1;
+	
 	displayPoint(x, y);
 	
 	for (int i = 0; i < deltaX; i++) {
+	
 		if (pk < 0) {
 			pk += 2 * deltaY;
 			x++;
@@ -61,73 +68,97 @@ void BresenhamLineDrawingAlgo(float x1, float y1, float x2, float y2) {
 			x++;
 			y++;
 		}
+		
 		displayPoint(x, y);
 	}
+	
 }
 
 // Utility Functions converting mouse coordinates to window coordinates.
-float mouseXToWindowX(float x) {
+double mouseXToWindowX(double x) {
 	return x - windowWidth/2;
 }
 
-float mouseYToWindowY(float y) {
+double mouseYToWindowY(double y) {
 	return windowHeight/2 - y;
 }
 
 
 // Mouse procedure for drawing a line by specifying endpoints through left mouse click.
-void mouseFunc(GLint button, GLint action, GLint xMouse, GLint yMouse) {
-
+void mouseFunc(int button, int action, int xMouse, int yMouse) {
+	
+	//Whenever the left mouse button is the pressed do the following.
 	if (button == GLUT_LEFT_BUTTON && action == GLUT_DOWN) {
+		
+		// Save the coordinates for the first mouse click.
 		if (mousePressedBefore == false) {
 			x = xMouse;
 			y = yMouse;
 			mousePressedBefore = true;
 		}
+		// Draw a line from the previous saved point to the point of second mouse click.
 		else {
 			DDALineDrawingAlgo(mouseXToWindowX(x),mouseYToWindowY(y),
 			mouseXToWindowX(xMouse), mouseYToWindowY(yMouse));
 			mousePressedBefore = false;
 		}
+		
 	}
+	
 	glFlush();
+	
 }
 
 
+// Draws X and Y axis for the window.
 void drawCoordinateAxes() {
+	
+	//White color
 	glColor3f(1.0, 1.0, 1.0);
 	
+	// Y-axis	
+	DDALineDrawingAlgo(0, windowHeight/2, 0, -windowHeight/2);
 	
-	glBegin(GL_LINES);
-	glVertex2i(0, windowHeight/2);
-	glVertex2i(0, -windowHeight/2);
-	glEnd();
-	
-	glBegin(GL_LINES);
-	glVertex2i(windowWidth/2, 0);
-	glVertex2i(-windowWidth/2, 0);
-	glEnd();
+	// X-axis
+	DDALineDrawingAlgo(windowWidth/2, 0, -windowWidth/2, 0);
 	
 	glFlush();
 }
 
+
+// Setting up window properties.
 void Init() {
+
+	// Single buffer and RGB color model
 	glutInitDisplayMode(GLUT_SINGLE|GLUT_RGB);
+	
+	// Black Background with maximum opaqueness
 	glClearColor(0.0, 0.0, 0.0, 0.0);
+	
 	glMatrixMode(GL_PROJECTION);
+	
+	// Setting up the coordinate system for the window such that the middle point of the window
+	// is the origin. For example, let's say windowWidth is 1000 and windowHeight is 800 then
+	// the x-axis of the window will range from -500 to 500 and y-axis will be -400 to 400.
 	gluOrtho2D(-windowWidth/2, windowWidth/2, -windowHeight/2, windowHeight/2);
+	
 }
 
 
-void mydisplay() {
+void myDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT);
-	glColor3f(1.0, 0.0, 0.0);
 	drawCoordinateAxes();
+	glColor3f(1.0, 0.0, 0.0);
 	glFlush();
 }
 
 
 int main(int argc, char** argv) {
+	
+	 
+	//Taking window dimensions as command line arguments.
+	//For example - ./Assignment2.exe 1000 800
+	//Here windowWidth = 1000 and winodwHeight = 800.
 	
 	windowWidth = atoi(argv[1]);
 	windowHeight = atoi(argv[2]);
@@ -138,7 +169,7 @@ int main(int argc, char** argv) {
 	glutCreateWindow("Assignment2");
 	
 	Init();
-	glutDisplayFunc(mydisplay);
+	glutDisplayFunc(myDisplay);
 	glutMouseFunc(mouseFunc);
 	glutMainLoop();
 }
