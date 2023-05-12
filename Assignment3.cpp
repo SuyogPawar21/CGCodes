@@ -1,6 +1,5 @@
 #include <GL/glut.h>
 #include <cmath>
-#include <stdlib.h>
 
 
 // Global Variables used in Mouse Procedure
@@ -13,14 +12,17 @@ int windowWidth, windowHeight;
 
 
 // Utility function to draw a point
-void drawPoint(float x, float y) {
+void drawPoint(double x, double y) {
 	glBegin(GL_POINTS);
-		glVertex2f(x, y);
+	glVertex2f(x, y);
 	glEnd();
 }
 
 
-void drawPointInAllQuadrants(float x, float y, float Cx, float Cy) {
+// Utility Function used in Bresenham Circle Drawing Algorithm.
+// 'Cx' is centre's x coordinate and 'Cy' is centre's y coordinate.
+void drawPointInAllQuadrants(double x, double y, double Cx, double Cy) {
+
 	// First Quadrant
 	drawPoint(x + Cx, y + Cy);
 	drawPoint(y + Cx, x + Cy);
@@ -36,12 +38,15 @@ void drawPointInAllQuadrants(float x, float y, float Cx, float Cy) {
 	// Fourth Quadrant
 	drawPoint(x + Cx, -y + Cy);
 	drawPoint(y + Cx, -x + Cy);
+	
 }
 
 
-void BresenhamCircleDrawingAlgo(float Cx, float Cy, float radius) {
-	float pk = 3 - (2 * radius);
-	float x = 0, y = radius;
+// Works for any centre and radius.
+void BresenhamCircleDrawingAlgo(double Cx, double Cy, double radius) {
+
+	double pk = 3 - (2 * radius);
+	double x = 0, y = radius;
 	
 	while (x <= y) {
 		if (pk < 0) {
@@ -53,14 +58,16 @@ void BresenhamCircleDrawingAlgo(float Cx, float Cy, float radius) {
 			y--;
 			pk += 4 * (x - y) + 10;
 		}
+		
 		drawPointInAllQuadrants(x, y, Cx, Cy);
 	}
+	
 }
 
 
 void drawCoordinateAxes() {
+
 	glColor3f(1.0, 1.0, 1.0);
-	
 	
 	glBegin(GL_LINES);
 	glVertex2i(0, windowHeight/2);
@@ -73,13 +80,14 @@ void drawCoordinateAxes() {
 	glEnd();
 	
 	glFlush();
+	
 }
 
 
 void myDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT);
 	drawCoordinateAxes();
-	glColor3f(1.0, 1.0, 0.0);
+	glColor3f(1.0, 0.0, 0.0);
 	glFlush();
 }
 
@@ -93,33 +101,51 @@ void Init() {
 
 
 // Utility Functions converting mouse coordinates to window coordinates.
-float mouseXToWindowX(float x) {
+double mouseXToWindowX(double x) {
 	return x - windowWidth/2;
 }
 
-float mouseYToWindowY(float y) {
+double mouseYToWindowY(double y) {
 	return windowHeight/2 - y;
 }
 
 
-void mouseFunc(GLint button, GLint action, GLint xMouse, GLint yMouse) {
+// Utility function for finding distance between two points.
+double distBetween2Points(double x1, double y1, double x2, double y2) {
+	return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+}
+
+
+// Mouse procedure for drawing a circle by specifying the centre through the first mouse
+// click and radius through the second mouse click.
+void mouseFunc(int button, int action, int xMouse, int yMouse) {
+
+	//Whenever the left mouse button is the pressed do the following.
 	if (button == GLUT_LEFT_BUTTON && action == GLUT_DOWN) {
+		
+		// Save the coordinates for centre through the first mouse click.
 		if (mousePressedBefore == false) {
 			x = xMouse;
 			y = yMouse;
 			mousePressedBefore = true;
 		}
 		else {
-			float radius = sqrt(pow(xMouse - x, 2) + pow(yMouse - y, 2));
+			// Calculate radius as distance between first and second mouse click point.
+			double radius = distBetween2Points(xMouse, yMouse, x , y);
+			// Draw the circle.
 			BresenhamCircleDrawingAlgo(mouseXToWindowX(x), mouseYToWindowY(y), radius);
+			// Reset flag.
 			mousePressedBefore = false;
 		}
+		
 		glFlush();
 	}
+	
 }
 
 
 int main(int argc, char** argv) {	
+
 	windowWidth = atoi(argv[1]);
 	windowHeight = atoi(argv[2]);
 		
@@ -133,4 +159,5 @@ int main(int argc, char** argv) {
 	glutMouseFunc(mouseFunc);
 	
 	glutMainLoop();
+	
 }
