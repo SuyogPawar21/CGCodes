@@ -48,30 +48,22 @@ float mouseYToWindowY(float y) {
 }
 
 
-void drawLine(float x1, float y1, float x2, float y2) {
-	glBegin(GL_LINES);
-	glVertex2f(x1, y1);
-	glVertex2f(x2, y2);
-	glEnd();
-}
-
-
 // Utility Function for drawing polygon with vertices as stored in the 'points' array. 
 void drawPolygon() {
-	for (int i = 0; i < verticesCount - 1; i++) {
-		drawLine(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
+	glBegin(GL_LINE_LOOP);
+	for (int i = 0; i < verticesCount; i++) {
+		glVertex2i(points[i].x, points[i].y);
 	}
-	drawLine(points[verticesCount - 1].x, points[verticesCount - 1].y, points[0].x, points[0].y);
-	
+	glEnd();
 	glFlush();
 }
 
 
 void Init() {
 	glutInitDisplayMode(GLUT_SINGLE|GLUT_RGB);
-  	glClearColor(1.0, 1.0, 1.0, 0.0);
-  	glMatrixMode(GL_PROJECTION);
-  	gluOrtho2D(0, windowWidth, 0, windowHeight);
+  glClearColor(1.0, 1.0, 1.0, 0.0);
+  glMatrixMode(GL_PROJECTION);
+  gluOrtho2D(0, windowWidth, 0, windowHeight);
 }
 
 
@@ -130,25 +122,25 @@ void floodFill4(int x, int y) {
 void initializeColors() {
 	// Black
 	boundaryColor.r = 0.0f;
-  	boundaryColor.g = 0.0f;
-  	boundaryColor.b = 0.0f;
+  boundaryColor.g = 0.0f;
+  boundaryColor.b = 0.0f;
   
- 	// Red
-  	fillColor.r = 1.0f;
-  	fillColor.g = 0.0f;
-  	fillColor.b = 0.0f;
+  // Red
+  fillColor.r = 1.0f;
+  fillColor.g = 0.0f;
+  fillColor.b = 0.0f;
   
-  	// White
-  	interiorColor.r = 1.0f;
-  	interiorColor.g = 1.0f;
-  	interiorColor.b = 1.0f;
+  // White
+  interiorColor.r = 1.0f;
+  interiorColor.g = 1.0f;
+  interiorColor.b = 1.0f;
 }
 
 
 void myDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f(0.0, 0.0, 0.0);
-   	glFlush();
+  glFlush();
 }
 
 
@@ -194,17 +186,17 @@ int main(int argc, char** argv) {
 		
 	initializeColors();
 		
-	windowWidth = atoi(argv[1]);
-	windowHeight = atoi(argv[2]);
+	windowWidth = 800;
+	windowHeight = 800;
 		
-  	glutInit(&argc, argv);
-  	glutInitWindowSize(windowWidth, windowHeight);
-  	glutInitWindowPosition(100, 100);
-  	glutCreateWindow("Assignment4");
+  glutInit(&argc, argv);
+  glutInitWindowSize(windowWidth, windowHeight);
+  glutInitWindowPosition(100, 100);
+  glutCreateWindow("Assignment4");
     
-  	Init();
-  	glutDisplayFunc(myDisplay);
-  	glutMouseFunc(myMouse);
-  	glutKeyboardFunc(myKeyboard);
-  	glutMainLoop();    
+  Init();
+  glutDisplayFunc(myDisplay);
+  glutMouseFunc(myMouse);
+  glutKeyboardFunc(myKeyboard);
+  glutMainLoop();    
 }
