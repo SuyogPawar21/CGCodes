@@ -20,7 +20,7 @@ void drawPoint(double x, double y) {
 
 
 // Utility Function used in Bresenham Circle Drawing Algorithm.
-// 'Cx' is centre's x coordinate and 'Cy' is centre's y coordinate.
+// 'Cx' is centre's x-coordinate and 'Cy' is centre's y-coordinate.
 void drawPointInAllQuadrants(double x, double y, double Cx, double Cy) {
 
 	// First Quadrant
@@ -120,7 +120,7 @@ double distBetween2Points(double x1, double y1, double x2, double y2) {
 // click and radius through the second mouse click.
 void mouseFunc(int button, int action, int xMouse, int yMouse) {
 
-	//Whenever the left mouse button is the pressed do the following.
+	// Whenever the left mouse button is pressed do the following.
 	if (button == GLUT_LEFT_BUTTON && action == GLUT_DOWN) {
 		
 		// Save the coordinates for centre through the first mouse click.
@@ -146,8 +146,8 @@ void mouseFunc(int button, int action, int xMouse, int yMouse) {
 
 int main(int argc, char** argv) {	
 
-	windowWidth = atoi(argv[1]);
-	windowHeight = atoi(argv[2]);
+	windowWidth = 800;
+	windowHeight = 800;
 		
 	glutInit(&argc, argv);
 	glutInitWindowPosition(0, 0);
