@@ -2,6 +2,8 @@
 #include <cmath>
 #include <iostream>
 
+#define RADIAN (M_PI / 180)
+
 using namespace std;
 
 
@@ -198,7 +200,7 @@ void myKeyboard(unsigned char key, int xMouse , int yMouse) {
 		double rotationAngle;
 		cout << "Rotation Angle: ";
 		cin >> rotationAngle;
-		
+		rotationAngle *= RADIAN;
 		rotation(rotationAngle);
 		drawPolygon();
 	}
