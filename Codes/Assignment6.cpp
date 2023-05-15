@@ -1,59 +1,43 @@
 #include <GL/glut.h>
 #include <cmath>
 #include <iostream>
-#include <stdlib.h>
 
 using namespace std;
 
-class Point {
 
-	public:
-		float x ,y;
-		
-		Point(float x, float y) {
-			this->x = x;
-			this->y = y;
-		}
-		
-		Point() {
-			this->x = this->y = 0;
-		}
+struct Point {
+		double x , y;
 };
+
 
 int windowWidth, windowHeight;
 
-int verticesCount = 0;
 
+int verticesCount = 0;
 bool objectDrawn = false;
 
 Point points[20];
 
-float screenXToWindowX(float x) {
+double screenXToWindowX(double x) {
 	return x - windowWidth/2;
 }
 
-float screenYToWindowY(float y) {
+double screenYToWindowY(double y) {
 	return windowHeight/2 - y;
 }
 
 
 void drawPolygon() {
-	glColor3f(1.0, 1.0, 0.0);
-	for (int i = 0; i < verticesCount - 1; i++) {
-		glBegin(GL_LINES);
+	glBegin(GL_LINE_LOOP);
+	for (int i = 0; i < verticesCount; i++) {
 		glVertex2f(points[i].x, points[i].y);
-		glVertex2f(points[i + 1].x, points[i + 1].y);
-		glEnd();
 	}
-	glBegin(GL_LINES);
-	glVertex2f(points[verticesCount - 1].x, points[verticesCount - 1].y);
-	glVertex2f(points[0].x, points[0].y);
 	glEnd();
 	glFlush();
 }
 
+
 void drawCoordinateAxes() {
-	glColor3f(1.0, 1.0, 1.0);
 	
 	glBegin(GL_LINES);
 	glVertex2i(0, windowHeight/2);
@@ -67,6 +51,7 @@ void drawCoordinateAxes() {
 	
 	glFlush();
 }
+
 
 void Init() {
 	glutInitDisplayMode(GLUT_SINGLE|GLUT_RGB);
@@ -94,9 +79,20 @@ void translation(int tX, int tY) {
 }
 
 
-void scalingAboutFixedPoint(float sX, float sY) {
+void scaling(double sX, double sY) {
 	
-	Point fixedPoint(points[0].x, points[0].y);
+	for (int i = 0; i < verticesCount; i++) {
+		points[i].x *= sX;
+		points[i].y *= sY;
+	}
+	
+}
+
+void scalingAboutFixedPoint(double sX, double sY) {
+	
+	Point fixedPoint;
+	fixedPoint.x = points[0].x;
+	fixedPoint.y =  points[0].y;
 	
 	for (int i = 0; i < verticesCount; i++) {
 		points[i].x = (points[i].x * sX) + (fixedPoint.x * (1 - sX));
@@ -106,36 +102,38 @@ void scalingAboutFixedPoint(float sX, float sY) {
 }
 
 
-float calDistFromOrigin(float x, float y) {
+double calDistFromOrigin(double x, double y) {
 	return sqrt(pow(x, 2) + pow(y, 2));
 }
 
-float calAngleFromOrigin(float x, float y) {
+double calAngleFromOrigin(double x, double y) {
 	return atan(y / x);
 }
 
 
-void rotation(float rotationAngle) {
+void rotation(double rotationAngle) {
 	
-	float distFromOrigin, angleFromOrigin;
+	double distFromOrigin, angleFromOrigin;
 	 
 	for (int i = 0; i < verticesCount; i++) {
+	
 		distFromOrigin = calDistFromOrigin(points[i].x, points[i].y);
 		angleFromOrigin = calAngleFromOrigin(points[i].x, points[i].y);
 		
 		points[i].x = distFromOrigin * cos(rotationAngle + angleFromOrigin);
 		points[i].y = distFromOrigin * sin(rotationAngle + angleFromOrigin);
+		
 	}
 	
 }
 
-void xShear(float shX) {
+void xShear(double shX) {
 	for (int i = 0; i < verticesCount; i++) {
 		points[i].x += shX * points[i].y;
 	}
 }
 
-void yShear(float shY) {
+void yShear(double shY) {
 	for (int i = 0 ; i < verticesCount; i++) {
 		points[i].y += shY * points[i].x;
 	}
@@ -156,7 +154,7 @@ void reflectionAboutYAxis() {
 
 void myMouse(int button, int action, int xMouse, int yMouse) {
 	if (button == GLUT_LEFT_BUTTON && action == GLUT_DOWN) {
-		if (objectDrawn) {
+		if (objectDrawn == true) {
 			objectDrawn = false;
 			verticesCount = 0;
 		}
@@ -166,12 +164,15 @@ void myMouse(int button, int action, int xMouse, int yMouse) {
 	else if (button == GLUT_RIGHT_BUTTON && action == GLUT_DOWN) {
 		objectDrawn = true;
 		myDisplay();
+		glColor3f(1.0, 1.0, 0.0);
 		drawPolygon();
 	}
 }
 
 
 void myKeyboard(unsigned char key, int xMouse , int yMouse) {
+	glColor3f(1.0, 0.0, 0.0);
+	
 	if (key == 't') {
 		int tX, tY;
 		cout << "Translation Factor X: ";
@@ -180,33 +181,30 @@ void myKeyboard(unsigned char key, int xMouse , int yMouse) {
 		cin >> tY;
 		
 		translation(tX, tY);
-		myDisplay();
 		drawPolygon();
 	}
 	else if (key == 's') {
-		float sX, sY;
+		double sX, sY;
 		cout << "Scaling Factor X: ";
 		cin >> sX;
 		cout << "Scaling Factor Y: ";
 		cin >> sY;
 		
-		scalingAboutFixedPoint(sX, sY);
-		myDisplay();
+		scaling(sX, sY);
 		drawPolygon();
 	}
 	
 	else if (key == 'r') {
-		float rotationAngle;
+		double rotationAngle;
 		cout << "Rotation Angle: ";
 		cin >> rotationAngle;
 		
 		rotation(rotationAngle);
-		myDisplay();
 		drawPolygon();
 	}
 	
 	else if (key == 'x') {
-		float shearFactor;
+		double shearFactor;
 		char shearType;
 		cout << "X-Shear or Y-Shear?(Type 'x' or 'y'): ";
 		cin >> shearType;
@@ -220,7 +218,6 @@ void myKeyboard(unsigned char key, int xMouse , int yMouse) {
 			yShear(shearFactor);
 		}
 		
-		myDisplay();
 		drawPolygon();
 	}
 	
@@ -236,7 +233,6 @@ void myKeyboard(unsigned char key, int xMouse , int yMouse) {
 			reflectionAboutYAxis();
 		}
 		
-		myDisplay();
 		drawPolygon();
 	}
 }
@@ -244,8 +240,9 @@ void myKeyboard(unsigned char key, int xMouse , int yMouse) {
 
 int main(int argc, char** argv) {
 
-	windowWidth = atoi(argv[1]);
-	windowHeight = atoi(argv[2]);
+	windowWidth = 800;
+	windowHeight = 800;
+	
 	glutInit(&argc, argv);	
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(windowWidth, windowHeight);
