@@ -1,6 +1,6 @@
 #include <GL/glut.h>
 #include <cmath>
-
+#include <stdio.h>
 
 // Global Variables used in Mouse Procedure.
 bool mousePressedBefore = false;
@@ -12,18 +12,18 @@ int windowWidth, windowHeight;
 
 
 // Utility function to draw a point.
-void drawPoint(double x, double y) {
+void drawPoint(int x, int y) {
 	glBegin(GL_POINTS);
-	glVertex2f(x, y);
+	glVertex2i(x, y);
 	glEnd();
 }
 
 
 // Works for all octants.
-void DDALineDrawingAlgo(double x1, double y1, double x2, double y2) {
+void DDALineDrawingAlgo(int x1, int y1, int x2, int y2) {
 
-	double dx = x2 - x1, dy = y2 - y1;
-	double steps;
+	int dx = x2 - x1, dy = y2 - y1;
+	int steps;
 	
 	if (abs(dx) > abs(dy)) {
 		steps = abs(dx);
@@ -32,14 +32,15 @@ void DDALineDrawingAlgo(double x1, double y1, double x2, double y2) {
 		steps = abs(dy);
 	}
 
-	double deltaX = dx/steps, deltaY = dy/steps;
+	double deltaX = ((double) dx) / steps, deltaY = ((double) dy) / steps;
+	
 	double x = x1, y = y1;
 	drawPoint(x, y);
 	
 	for (int i = 0; i < steps; i++) {
 		x += deltaX;
 		y += deltaY;
-		drawPoint(x, y);
+		drawPoint(round(x), round(y));
 	}
 	
 	drawPoint(x2, y2);
@@ -47,31 +48,76 @@ void DDALineDrawingAlgo(double x1, double y1, double x2, double y2) {
 }
 
 
-// Works only for first octant.
-void BresenhamLineDrawingAlgo(double x1, double y1, double x2, double y2) {
+// Works for all octants.
+void BresenhamLineDrawingAlgo(int x1, int y1, int x2, int y2) {
 
-	double deltaX = x2 - x1, deltaY = y2 - y1;
-	double pk = (2 * deltaY) - deltaX;
-	double x = x1, y = y1;
+	int deltaX = abs(x2 - x1), deltaY(y2 - y1);
 	
+	if (deltaX > deltaY) {
+		drawGentleSlopeLine(x1, y1, x2, y2);
+	}
+	else {
+		drawHarshSlopeLine(x1, y1, x2, y2);
+	}
+	
+}
+
+// For lines whose |slope| < 1.
+void drawGentleSlopeLine(int x1, int y1, int x2, int y2) {
+	
+	int deltaX = abs(x2 - x1), deltaY = abs(y2 - y1);
+	int pk = (2 * deltaY) - deltaX;
+	int xIncrement = (x2 > x1) ? 1 : -1;
+	int yIncrement = (y2 > y1) ? 1 : -1;
+	
+	int x = x1 , y = y1;
 	drawPoint(x, y);
 	
 	for (int i = 0; i < deltaX; i++) {
 	
 		if (pk < 0) {
 			pk += 2 * deltaY;
-			x++;
+			x += xIncrement;
 		}
 		else {
 			pk += 2 * (deltaY - deltaX);
-			x++;
-			y++;
+			x += xIncrement;
+			y += yIncrement;
 		}
 		
 		drawPoint(x, y);
 	}
 	
 }
+
+// For lines whose |slope| >= 1.
+void drawHarshSlopeLine(int x1, int y1, int x2, int y2) {
+	
+	int deltaX = abs(x2 - x1), deltaY = abs(y2 - y1);
+	int pk = (2 * deltaX) - deltaY;
+	int xIncrement = (x2 > x1) ? 1 : -1;
+	int yIncrement = (y2 > y1) ? 1 : -1;
+	
+	int x = x1 , y = y1;
+	drawPoint(x, y);
+	
+	for (int i = 0; i < deltaY; i++) {
+	
+		if (pk < 0) {
+			pk += 2 * deltaX;
+			y += yIncrement;
+		}
+		else {
+			pk += 2 * (deltaX - deltaY);
+			x += xIncrement;
+			y += yIncrement;
+		}
+		
+		drawPoint(x, y);
+	}
+	
+}
+
 
 // Utility Functions converting mouse coordinates to window coordinates.
 double mouseXToWindowX(double x) {
@@ -97,7 +143,7 @@ void myMouse(int button, int action, int xMouse, int yMouse) {
 		}
 		// Draw a line from the previous saved point to the point of second mouse click.
 		else {
-			DDALineDrawingAlgo(mouseXToWindowX(x),mouseYToWindowY(y),
+			BresenhamLineDrawingAlgo(mouseXToWindowX(x),mouseYToWindowY(y),
 			mouseXToWindowX(xMouse), mouseYToWindowY(yMouse));
 			mousePressedBefore = false;
 		}
@@ -156,7 +202,7 @@ int main(int argc, char** argv) {
 	
 	windowWidth = 800;
 	windowHeight = 800;
-	
+
 	glutInit(&argc, argv);	
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(windowWidth, windowHeight);
