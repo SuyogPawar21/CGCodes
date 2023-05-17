@@ -1,16 +1,11 @@
 #include <GL/glut.h>
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 #define RADIAN (M_PI / 180)
 
 using namespace std;
-
-
-struct Point {
-		double x , y;
-};
-
 
 int windowWidth, windowHeight;
 
@@ -18,7 +13,7 @@ int windowWidth, windowHeight;
 int verticesCount = 0;
 bool objectDrawn = false;
 
-Point points[20];
+vector<vector<double>> vertices(20, vector<double>(3));
 
 double screenXToWindowX(double x) {
 	return x - windowWidth/2;
@@ -27,17 +22,6 @@ double screenXToWindowX(double x) {
 double screenYToWindowY(double y) {
 	return windowHeight/2 - y;
 }
-
-
-void drawPolygon() {
-	glBegin(GL_LINE_LOOP);
-	for (int i = 0; i < verticesCount; i++) {
-		glVertex2f(points[i].x, points[i].y);
-	}
-	glEnd();
-	glFlush();
-}
-
 
 void drawCoordinateAxes() {
 	
@@ -71,86 +55,78 @@ void myDisplay() {
 }
 
 
-void translation(int tX, int tY) {
-	
+void drawPolygon() {
+	glBegin(GL_LINE_LOOP);
 	for (int i = 0; i < verticesCount; i++) {
-		points[i].x += tX;
-		points[i].y += tY;
+		glVertex2f(vertices[i][0], vertices[i][1]);
+	}
+	glEnd();
+	glFlush();
+}
+
+
+// A = A.B
+void matrixMul(vector<vector<double>>& a, vector<vector<double>>& b, int numRowsA) {
+	
+	vector<vector<double>> result(20, vector<double>(3));
+	
+	for (int i = 0; i < numRowsA; i++) {
+		for (int j = 0; j < 3; j++) {
+			result[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j] + a[i][2] * b[2][j];
+		}
+	}
+	
+	for (int i = 0; i < numRowsA; i++) {
+		for (int j = 0; j < 3; j++) {
+			a[i][j] = result[i][j];
+		}
 	}
 	
 }
 
 
-void scaling(double sX, double sY) {
-	
-	for (int i = 0; i < verticesCount; i++) {
-		points[i].x *= sX;
-		points[i].y *= sY;
-	}
-	
-}
-
-void scalingAboutFixedPoint(double sX, double sY) {
-	
-	Point fixedPoint;
-	fixedPoint.x = points[0].x;
-	fixedPoint.y =  points[0].y;
-	
-	for (int i = 0; i < verticesCount; i++) {
-		points[i].x = (points[i].x * sX) + (fixedPoint.x * (1 - sX));
-		points[i].y = (points[i].y * sY) + (fixedPoint.y * (1 - sY));
-	}
-	
+void translation(double tX, double tY, int numRows) {
+	vector<vector<double>> translationMatrix = {{1, 0, 0}, 
+															  							{0, 1, 0},
+															  							{tX, tY, 1}};
+															
+	matrixMul(vertices, translationMatrix, numRows);
 }
 
 
-double calDistFromOrigin(double x, double y) {
-	return sqrt(pow(x, 2) + pow(y, 2));
+void scalingAboutFixedPoint(double sX, double sY, int xF, int yF, int numRows) {
+	vector<vector<double>> scalingMatrix = {{sX, 0, 0}, 
+															  					{0, sY, 0},
+															  					{xF * (1-sX), yF * (1-sY), 1}};
+															
+	matrixMul(vertices, scalingMatrix, numRows);
 }
 
-double calAngleFromOrigin(double x, double y) {
-	return atan(y / x);
+
+void rotationAboutOrigin(double rotationAngle, int numRows) {
+	vector<vector<double>> rotationMatrix = {{cos(rotationAngle), sin(rotationAngle), 0}, 
+															  					 {-sin(rotationAngle), cos(rotationAngle), 0},
+															  					 {0, 0, 1}};
+															
+	matrixMul(vertices, rotationMatrix, numRows);
 }
 
-
-void rotation(double rotationAngle) {
-	
-	double distFromOrigin, angleFromOrigin;
-	 
-	for (int i = 0; i < verticesCount; i++) {
-	
-		distFromOrigin = calDistFromOrigin(points[i].x, points[i].y);
-		angleFromOrigin = calAngleFromOrigin(points[i].x, points[i].y);
-		
-		points[i].x = distFromOrigin * cos(rotationAngle + angleFromOrigin);
-		points[i].y = distFromOrigin * sin(rotationAngle + angleFromOrigin);
-		
-	}
-	
-}
-
-void xShear(double shX) {
-	for (int i = 0; i < verticesCount; i++) {
-		points[i].x += shX * points[i].y;
-	}
-}
-
-void yShear(double shY) {
-	for (int i = 0 ; i < verticesCount; i++) {
-		points[i].y += shY * points[i].x;
-	}
-}
 
 void reflectionAboutXAxis() {
-	for (int i = 0; i < verticesCount; i++) {
-		points[i].y *= -1;
-	}
+	vector<vector<double>> reflectionMatrix = {{1, 0, 0}, 
+															  						{0, -1, 0},
+															  						{0, 0, 1}};
+															
+	matrixMul(vertices, reflectionMatrix, verticesCount);
 }
 
+
 void reflectionAboutYAxis() {
-	for (int i = 0; i < verticesCount; i++) {
-		points[i].x *= -1;
-	}
+	vector<vector<double>> reflectionMatrix = {{-1, 0, 0}, 
+															  						{0, 1, 0},
+															  						{0, 0, 1}};
+															
+	matrixMul(vertices, reflectionMatrix, verticesCount);
 }
 
 
@@ -160,8 +136,9 @@ void myMouse(int button, int action, int xMouse, int yMouse) {
 			objectDrawn = false;
 			verticesCount = 0;
 		}
-		points[verticesCount].x = screenXToWindowX(xMouse);
-		points[verticesCount++].y = screenYToWindowY(yMouse);
+		vertices[verticesCount][0] = screenXToWindowX(xMouse);
+		vertices[verticesCount][1] = screenYToWindowY(yMouse);
+		vertices[verticesCount++][2] = 1;
 	}
 	else if (button == GLUT_RIGHT_BUTTON && action == GLUT_DOWN) {
 		objectDrawn = true;
@@ -176,67 +153,51 @@ void myKeyboard(unsigned char key, int xMouse , int yMouse) {
 	glColor3f(1.0, 0.0, 0.0);
 	
 	if (key == 't') {
-		int tX, tY;
+		double tX, tY;
 		cout << "Translation Factor X: ";
 		cin >> tX;
 		cout << "Translation Factor Y: ";
 		cin >> tY;
 		
-		translation(tX, tY);
+		translation(tX, tY, verticesCount);
 		drawPolygon();
 	}
-	else if (key == 's') {
+	
+	if (key == 's') {
 		double sX, sY;
 		cout << "Scaling Factor X: ";
 		cin >> sX;
 		cout << "Scaling Factor Y: ";
 		cin >> sY;
 		
-		scaling(sX, sY);
+		scalingAboutFixedPoint(sX, sY, vertices[0][0], vertices[0][1], verticesCount);
 		drawPolygon();
 	}
 	
-	else if (key == 'r') {
+	if (key == 'r') {
 		double rotationAngle;
 		cout << "Rotation Angle: ";
 		cin >> rotationAngle;
 		rotationAngle *= RADIAN;
-		rotation(rotationAngle);
+		
+		rotationAboutOrigin(rotationAngle, verticesCount);
 		drawPolygon();
 	}
 	
-	else if (key == 'x') {
-		double shearFactor;
-		char shearType;
-		cout << "X-Shear or Y-Shear?(Type 'x' or 'y'): ";
-		cin >> shearType;
-		cout << "Shear Factor: ";
-		cin >> shearFactor;
+	if (key == 'm') {
+		char axis;
+		cout << "Enter Axis of Reflection('x' or 'y'): ";
+		cin >> axis;
 		
-		if (shearType == 'x') {
-			xShear(shearFactor);
-		}
-		else if (shearType == 'y') {
-			yShear(shearFactor);
-		}
-		
-		drawPolygon();
-	}
-	
-	else if (key == 'm') {
-		char reflectionType;
-		cout << "Reflection about X-axis or Y-axis?(Type 'x' or 'y'): ";
-		cin >> reflectionType;
-		
-		if (reflectionType == 'x') {
+		if (axis == 'x') {
 			reflectionAboutXAxis();
 		}
-		else if (reflectionType == 'y') {
+		else if (axis == 'y') {
 			reflectionAboutYAxis();
 		}
-		
 		drawPolygon();
 	}
+	
 }
 
 
@@ -256,3 +217,4 @@ int main(int argc, char** argv) {
 	glutKeyboardFunc(myKeyboard);
 	glutMainLoop();
 }
+
