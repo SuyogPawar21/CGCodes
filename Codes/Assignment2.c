@@ -48,20 +48,6 @@ void DDALineDrawingAlgo(int x1, int y1, int x2, int y2) {
 }
 
 
-// Works for all octants.
-void BresenhamLineDrawingAlgo(int x1, int y1, int x2, int y2) {
-
-	int deltaX = abs(x2 - x1), deltaY(y2 - y1);
-	
-	if (deltaX > deltaY) {
-		drawGentleSlopeLine(x1, y1, x2, y2);
-	}
-	else {
-		drawHarshSlopeLine(x1, y1, x2, y2);
-	}
-	
-}
-
 // For lines whose |slope| < 1.
 void drawGentleSlopeLine(int x1, int y1, int x2, int y2) {
 	
@@ -119,6 +105,21 @@ void drawHarshSlopeLine(int x1, int y1, int x2, int y2) {
 }
 
 
+// Works for all octants.
+void BresenhamLineDrawingAlgo(int x1, int y1, int x2, int y2) {
+
+	int deltaX = abs(x2 - x1), deltaY = abs(y2 - y1);
+	
+	if (deltaX > deltaY) {
+		drawGentleSlopeLine(x1, y1, x2, y2);
+	}
+	else {
+		drawHarshSlopeLine(x1, y1, x2, y2);
+	}
+	
+}
+
+
 // Utility Functions converting mouse coordinates to window coordinates.
 double mouseXToWindowX(double x) {
 	return x - windowWidth/2;
@@ -154,6 +155,12 @@ void myMouse(int button, int action, int xMouse, int yMouse) {
 	
 }
 
+void myKeyboard(unsigned char key, int x, int y) {
+	if (key == '1') {
+		
+	}
+	
+}
 
 // Draws X and Y axis for the window.
 void drawCoordinateAxes() {
