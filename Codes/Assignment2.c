@@ -2,6 +2,13 @@
 #include <cmath>
 #include <stdio.h>
 
+
+int pointsIntervalDotted = 5;
+int pointsIntervalDashed = 20;
+bool shouldDraw = true;
+
+int drawingMode = 1;
+
 // Global Variables used in Mouse Procedure.
 bool mousePressedBefore = false;
 int x, y;
@@ -16,6 +23,35 @@ void drawPoint(int x, int y) {
 	glBegin(GL_POINTS);
 	glVertex2i(x, y);
 	glEnd();
+}
+
+
+void drawDottedPoint(int x, int y) {
+	if (pointsIntervalDotted != 0) {
+		pointsIntervalDotted--;
+		return;
+	}	
+	
+	glBegin(GL_POINTS);
+	glVertex2i(x, y);
+	glEnd();
+	pointsIntervalDotted = 5;
+
+}
+
+
+void drawDashPoint(int x, int y) {
+	pointsIntervalDashed--;
+	if (shouldDraw) {
+		glBegin(GL_POINTS);
+		glVertex2i(x, y);
+		glEnd();
+	}
+	if (pointsIntervalDashed == 0) {
+		shouldDraw = !shouldDraw;
+		pointsIntervalDashed = 20;
+	}
+	
 }
 
 
@@ -40,7 +76,18 @@ void DDALineDrawingAlgo(int x1, int y1, int x2, int y2) {
 	for (int i = 0; i < steps; i++) {
 		x += deltaX;
 		y += deltaY;
-		drawPoint(round(x), round(y));
+		
+		switch(drawingMode) {
+			case 1:
+				drawPoint(round(x), round(y));
+				break;
+			case 2:
+				drawDottedPoint(round(x), round(y));
+				break;
+			case 3:
+				drawDashPoint(round(x), round(y));
+				break;
+		}
 	}
 	
 	drawPoint(x2, y2);
@@ -71,13 +118,22 @@ void drawGentleSlopeLine(int x1, int y1, int x2, int y2) {
 			y += yIncrement;
 		}
 		
-		drawPoint(x, y);
+		switch(drawingMode) {
+			case 1:
+				drawPoint(x, y);
+				break;
+			case 2:
+				drawDottedPoint(x, y);
+				break;
+			case 3:
+				drawDashPoint(x, y);
+				break;
+		}
 	}
-	
 }
 
 // For lines whose |slope| >= 1.
-void drawHarshSlopeLine(int x1, int y1, int x2, int y2) {
+void drawSharpSlopeLine(int x1, int y1, int x2, int y2) {
 	
 	int deltaX = abs(x2 - x1), deltaY = abs(y2 - y1);
 	int pk = (2 * deltaX) - deltaY;
@@ -99,9 +155,18 @@ void drawHarshSlopeLine(int x1, int y1, int x2, int y2) {
 			y += yIncrement;
 		}
 		
-		drawPoint(x, y);
+		switch(drawingMode) {
+			case 1:
+				drawPoint(x, y);
+				break;
+			case 2:
+				drawDottedPoint(x, y);
+				break;
+			case 3:
+				drawDashPoint(x, y);
+				break;
+		}
 	}
-	
 }
 
 
@@ -114,7 +179,7 @@ void BresenhamLineDrawingAlgo(int x1, int y1, int x2, int y2) {
 		drawGentleSlopeLine(x1, y1, x2, y2);
 	}
 	else {
-		drawHarshSlopeLine(x1, y1, x2, y2);
+		drawSharpSlopeLine(x1, y1, x2, y2);
 	}
 	
 }
@@ -155,6 +220,20 @@ void myMouse(int button, int action, int xMouse, int yMouse) {
 	
 }
 
+void myKeyboard(unsigned char key, int x, int y) {
+	// Simple
+	if (key == '1') {
+		drawingMode = 1;
+	}
+	// Dotted
+	else if (key == '2') {
+		drawingMode = 2;
+	}
+	// Dashed
+	else if (key == '3') {
+		drawingMode = 3;
+	}
+}
 
 // Draws X and Y axis for the window.
 void drawCoordinateAxes() {
@@ -212,5 +291,6 @@ int main(int argc, char** argv) {
 	Init();
 	glutDisplayFunc(myDisplay);
 	glutMouseFunc(myMouse);
+	glutKeyboardFunc(myKeyboard);
 	glutMainLoop();
 }
