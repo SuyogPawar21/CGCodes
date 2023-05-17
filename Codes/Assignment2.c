@@ -155,12 +155,6 @@ void myMouse(int button, int action, int xMouse, int yMouse) {
 	
 }
 
-void myKeyboard(unsigned char key, int x, int y) {
-	if (key == '1') {
-		
-	}
-	
-}
 
 // Draws X and Y axis for the window.
 void drawCoordinateAxes() {
