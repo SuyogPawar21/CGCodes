@@ -191,7 +191,7 @@ int main(int argc, char** argv) {
 		
   glutInit(&argc, argv);
   glutInitWindowSize(windowWidth, windowHeight);
-  glutInitWindowPosition(100, 100);
+  glutInitWindowPosition(0, 0);
   glutCreateWindow("Assignment4");
     
   Init();
