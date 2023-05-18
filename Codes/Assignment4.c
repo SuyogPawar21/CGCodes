@@ -186,8 +186,8 @@ int main(int argc, char** argv) {
 		
 	initializeColors();
 		
-	windowWidth = 800;
-	windowHeight = 800;
+	windowWidth = 600;
+	windowHeight = 600;
 		
   glutInit(&argc, argv);
   glutInitWindowSize(windowWidth, windowHeight);
