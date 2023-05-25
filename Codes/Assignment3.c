@@ -1,5 +1,6 @@
 #include <GL/glut.h>
 #include <cmath>
+#include <unistd.h>
 
 
 // Global Variables used in Mouse Procedure
@@ -13,9 +14,21 @@ int windowWidth, windowHeight;
 
 // Utility function to draw a point
 void drawPoint(double x, double y) {
+	glPointSize(1);
 	glBegin(GL_POINTS);
 	glVertex2f(x, y);
 	glEnd();
+	glFlush();
+}
+
+
+void drawSolidPoint(int x, int y) {
+	glColor3f(1.0, 1.0, 0.0);
+	glPointSize(3);
+	glBegin(GL_POINTS);
+	glVertex2i(x, y);
+	glEnd();
+	glFlush();
 }
 
 
@@ -44,7 +57,9 @@ void drawPointInAllQuadrants(double x, double y, double Cx, double Cy) {
 
 // Works for any centre and radius.
 void BresenhamCircleDrawingAlgo(double Cx, double Cy, double radius) {
-
+	
+	glColor3f(1.0, 0.0, 0.0);
+	
 	double pk = 3 - (2 * radius);
 	double x = 0, y = radius;
 	
@@ -58,36 +73,94 @@ void BresenhamCircleDrawingAlgo(double Cx, double Cy, double radius) {
 			y--;
 			pk += 4 * (x - y) + 10;
 		}
-		
+		usleep(1500);
 		drawPointInAllQuadrants(x, y, Cx, Cy);
 	}
 	
 }
 
 
-void drawCoordinateAxes() {
+void drawGentleSlopeLine(int x1, int y1, int x2, int y2) {
+	
+	int deltaX = abs(x2 - x1), deltaY = abs(y2 - y1);
+	int pk = (2 * deltaY) - deltaX;
+	int xIncrement = (x2 > x1) ? 1 : -1;
+	int yIncrement = (y2 > y1) ? 1 : -1;
+	
+	int x = x1 , y = y1;
+	drawPoint(x, y);
+	
+	for (int i = 0; i < deltaX; i++) {
+	
+		if (pk < 0) {
+			pk += 2 * deltaY;
+			x += xIncrement;
+		}
+		else {
+			pk += 2 * (deltaY - deltaX);
+			x += xIncrement;
+			y += yIncrement;
+		}
+		usleep(500);
+		drawPoint(x, y);
+	}
+}
 
+
+void drawSharpSlopeLine(int x1, int y1, int x2, int y2) {
+	
+	int deltaX = abs(x2 - x1), deltaY = abs(y2 - y1);
+	int pk = (2 * deltaX) - deltaY;
+	int xIncrement = (x2 > x1) ? 1 : -1;
+	int yIncrement = (y2 > y1) ? 1 : -1;
+	
+	int x = x1 , y = y1;
+	drawPoint(x, y);
+	
+	for (int i = 0; i < deltaY; i++) {
+	
+		if (pk < 0) {
+			pk += 2 * deltaX;
+			y += yIncrement;
+		}
+		else {
+			pk += 2 * (deltaX - deltaY);
+			x += xIncrement;
+			y += yIncrement;
+		}
+		usleep(500);
+		drawPoint(x, y);		
+	}
+}
+
+
+
+void BresenhamLineDrawingAlgo(int x1, int y1, int x2, int y2) {
+	
 	glColor3f(1.0, 1.0, 1.0);
 	
-	glBegin(GL_LINES);
-	glVertex2i(0, windowHeight/2);
-	glVertex2i(0, -windowHeight/2);
-	glEnd();
+	int deltaX = abs(x2 - x1), deltaY = abs(y2 - y1);
 	
-	glBegin(GL_LINES);
-	glVertex2i(windowWidth/2, 0);
-	glVertex2i(-windowWidth/2, 0);
-	glEnd();
-	
-	glFlush();
+	if (deltaX > deltaY) {
+		drawGentleSlopeLine(x1, y1, x2, y2);
+	}
+	else {
+		drawSharpSlopeLine(x1, y1, x2, y2);
+	}
 	
 }
+
+
+void drawCoordinateAxes() {
+	BresenhamLineDrawingAlgo(0, windowHeight/2, 0, -windowHeight/2);
+	BresenhamLineDrawingAlgo(windowWidth/2, 0, -windowWidth/2, 0);
+	glFlush();
+}	
 
 
 void myDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT);
 	drawCoordinateAxes();
-	glColor3f(1.0, 0.0, 0.0);
 	glFlush();
 }
 
@@ -132,6 +205,8 @@ void mouseFunc(int button, int action, int xMouse, int yMouse) {
 		else {
 			// Calculate radius as distance between first and second mouse click point.
 			double radius = distBetween2Points(xMouse, yMouse, x , y);
+			// Draw Central Point
+			drawSolidPoint(mouseXToWindowX(x), mouseYToWindowY(y));
 			// Draw the circle.
 			BresenhamCircleDrawingAlgo(mouseXToWindowX(x), mouseYToWindowY(y), radius);
 			// Reset flag.
