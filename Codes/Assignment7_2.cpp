@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 
+
 using namespace std;
 
 int windowWidth, windowHeight;
@@ -12,10 +13,10 @@ struct Point {
 };
 
 
-Point controlPoints[4] = {{200, 200}, {400, 400}, {450, 400}, {500, 150}};
+Point controlPoints[3] = {{200, 200}, {300, 450}, {500, 150}};
 
 
-int numControlPoints = 4;
+int numControlPoints = 3;
 
 
 void drawPoint(int x, int y) {
@@ -86,6 +87,27 @@ void myDisplay() {
 }
 
 
+int pointToBeChanged = 2;
+
+
+void myMouse(int button, int action, int xMouse, int yMouse) {
+	if (button == GLUT_RIGHT_BUTTON && action == GLUT_DOWN) {
+		controlPoints[pointToBeChanged].x = xMouse;
+		controlPoints[pointToBeChanged].y = 800 - yMouse;
+		myDisplay();
+	}
+	
+}
+
+
+	
+void myKeyboard(unsigned char key, int xMouse, int yMouse) {
+	if (isdigit(key)) {
+		pointToBeChanged = key - '1';
+	}
+}	
+	
+
 int main(int argc, char** argv) {
 	windowWidth = windowHeight = 800;
 
@@ -96,8 +118,8 @@ int main(int argc, char** argv) {
 	
 	Init();
 	glutDisplayFunc(myDisplay);
-	//glutKeyboardFunc(myKeyboard);
-	//glutMouseFunc(myMouse);
+	glutKeyboardFunc(myKeyboard);
+	glutMouseFunc(myMouse);
 	glutMainLoop();
 	
 }
